@@ -1,15 +1,18 @@
+package com.billstudy.qmkg.main;
+import lombok.SneakyThrows;
 import org.apache.commons.io.ThreadUtils;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
+import javax.swing.*;
 import java.io.IOException;
 import java.time.Duration;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.atomic.AtomicInteger;
 
 public class QMKG_Music_Downloader {
@@ -25,16 +28,7 @@ public class QMKG_Music_Downloader {
     );
 
     public static void main(String[] args) {
-
-        ExecutorService downloadExecutor = Executors.newSingleThreadExecutor(new ThreadFactory() {
-            private Integer threadNum = 0;
-            @Override
-            public Thread newThread(Runnable r) {
-                return new Thread("thread-download-" + ++threadNum );
-            }
-        });
-
-        downloadExecutor.submit(new Runnable() {
+        new Thread() {
             @Override
             public void run() {
                 String userHomePageUrl = "https://kg.qq.com/node/personal?uid=639b9986232c338236";
@@ -48,52 +42,39 @@ public class QMKG_Music_Downloader {
                     throw new RuntimeException("Accept the user home url error.", e);
                 }
 
-                System.out.println(userHomePageDocument);
-                System.out.println("==============");
-                System.out.println(userHomePageDocument.getElementById("player"));
-
                 List<String> userSongsList = getSongsListByUserInfo(userHomePageDocument);
                 totalSize.getAndAdd(userSongsList.size());
 
                 // 2. 下载每首歌，解析关键数据到本地（音乐、封面、评论、日期、等关键信息）
                 for (int i = 0; i < userSongsList.size(); i++) {
-                    try {
-                        Document userSongPage = Jsoup.connect(userSongsList.get(i)).headers(HEADERS).get();
-                        DownloadSongInformationByPage(userSongPage);
-                        currentSize.getAndAdd(1);
-                    } catch (IOException e) {
-                        throw new RuntimeException(e);
-                    }
+                    DownloadSongInformationByPageUrl(userSongsList.get(i));
+                    currentSize.getAndAdd(1);
                 }
             }
-        });
+        }.start();
 
 
         // 3. 同步下载进度情况
-        Executors.newSingleThreadExecutor(new ThreadFactory() {
-            @Override
-            public Thread newThread(Runnable r) {
-                return new Thread("thread-show-current-process");
-            }
-        }).submit(new Runnable() {
+
+        new Thread("thread-download-process") {
+
+            @SneakyThrows
             @Override
             public void run() {
+                // 让上面的线程先跑起来
+                ThreadUtils.sleep(Duration.ofSeconds(3));
+
                 while (true){
                     int cSize = currentSize.get();
                     int tSize = totalSize.get();
-                    if (cSize < tSize){
-                        System.out.println("Download process: " + cSize + " / " + tSize);
+                    if (cSize >= tSize){
+                        break;
                     }
-                    try {
-                        ThreadUtils.sleep(Duration.ofSeconds(1));
-                    } catch (InterruptedException e) {
-                        throw new RuntimeException(e);
-                    }
+                    System.out.println("Download process: " + cSize + " / " + tSize);
+                    ThreadUtils.sleep(Duration.ofSeconds(1));
                 }
             }
-        });
-
-
+        }.start();
 
 
     }
@@ -101,9 +82,13 @@ public class QMKG_Music_Downloader {
 
     /**
      * 下载歌曲信息
-     * @param userSongPage 歌曲详情页
+     * @param userSongPageUrl 歌曲详情页
      */
-    private static void DownloadSongInformationByPage(Document userSongPage) {
+    @SneakyThrows
+    private static void DownloadSongInformationByPageUrl(String userSongPageUrl) {
+//        Document userSongPage = Jsoup.connect(userSongPageUrl).headers(HEADERS).get();
+
+        System.out.println("mock download song: " + userSongPageUrl);
     }
 
     /**
@@ -112,10 +97,14 @@ public class QMKG_Music_Downloader {
      * @return 歌曲地址清单
      */
     private static List<String> getSongsListByUserInfo(Document userHomePageDocument) {
+        List<String> songUrlList = new ArrayList<>(500);
         Elements modPlaylist__box = userHomePageDocument.getElementsByClass("mod_playlist__box");
         for (int i = 0; i < modPlaylist__box.size(); i++) {
-            System.out.println(modPlaylist__box.getFirst());
+            // e.g: <a href="javascript:;" data-playurl="https://node.kg.qq.com/qQYHup9ZjM/play_v2/?s=sBFqnnsD4iLGIsrt&amp;g_f=personal&amp;appsource=&amp;pageId=personalH5" class="mod_playlist__cover j_go_album" data-luopanv2="267,267002,267002004" data-hc_type="0"> <img class="play_img" src="//y.gtimg.cn/mediastyle/global/kg/default/default_cd.png?max_age=2592000" data-lazyload="http://pic.kg.qq.com/ttkg/0/a4a75eec01e8ccb2047e47ef83f9fafc5981bfae/320?bj=aHR0cHM6Ly95Lmd0aW1nLmNuL211c2ljL3Bob3RvX25ldy9UMDAyUjMwMHgzMDBNMDAwMDAzZE5ieDQxUzlldGYuanBnP21heF9hZ2U9MjU5MjAwMCszQTk2NkY5OEM3ODFBRTMxQUUxNDc2RjY5NzFFQzhDOQ%3D%3D" alt="王姐 湘女多情"> <i class="black_mask"></i> <i class="icon_play_m"></i> </a>
+            Element aTagElement = modPlaylist__box.get(i).children().getFirst();
+            String dataPlayUrl = aTagElement.attr("data-playurl");
+            songUrlList.add(dataPlayUrl);
         }
-        return List.of();
+        return songUrlList;
     }
 }
