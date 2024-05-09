@@ -23,3 +23,6 @@ idea
 vsr
 */logs/*
 .mvn
+
+src/main/resources/output/
+

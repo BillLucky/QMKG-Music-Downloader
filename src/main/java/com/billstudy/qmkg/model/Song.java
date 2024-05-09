@@ -1,5 +1,6 @@
 package com.billstudy.qmkg.model;
 
+import com.alibaba.fastjson2.JSONObject;
 import lombok.*;
 
 import java.util.List;
@@ -47,5 +48,22 @@ public class Song {
 
     // e.g: https://kg.qq.com/node/play?s=pv2GjjpUyYJqTpaz
     private String songDetailAccessUrl;
+
+    // e.g: http://tx.stream.kg.qq.com/njc-kgsvp/86_s_0bc3lxfycciafmadour37btl6xodqfeqa5ca.f0.mp4?vkey=62A93215A340B0629B1BC7116CFEB257BEA845FBA913CACFAD443343008AC89F848908E3909F26470C394DFBC94E26629344BE287F59B31979A15370C7940B7644C6801E7489F922628DFDAF43F8F5010F9817E3EA97DE15&dis_k=2b0f9cd17f25efe904711f4246c91363&dis_t=1715087871&fromtag=86&ugcid=164361492_1589934543_948&nr=1
+    private String songDownloadMediaUrl;
+
+    // mp4 or m4a，根据页面的tag定，video 或者 audio
+    private String mediaType;
+
+    // 页面上的大JS对象，全存起来，后续用就不用再解析了
+    private JSONObject songDetailPageJsVarData;
+
+    public String generatorSongOutputName() {
+        return (getSongNo() + "." + songName + "-" + singerTime)
+                .replaceAll(":","-")
+                .replaceAll(" ", "-")
+                ;
+
+    }
 }
 
