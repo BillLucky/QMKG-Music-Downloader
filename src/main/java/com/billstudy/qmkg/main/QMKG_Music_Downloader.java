@@ -45,7 +45,6 @@ public class QMKG_Music_Downloader {
             @Override
             public void run() {
                 // 1. 访问到用户的歌曲清单（作品清单）
-
                 List<Song> userSongsList = getSongsListByUserInfo();
                 totalSize.getAndAdd(userSongsList.size());
 

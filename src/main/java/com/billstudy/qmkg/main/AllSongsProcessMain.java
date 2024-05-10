@@ -36,7 +36,7 @@ public class AllSongsProcessMain {
                             .songPlayTimes(Integer.parseInt(listenedAndTalkTimes.get(0).text()))
                             .songTalkTimes(Integer.parseInt(listenedAndTalkTimes.get(1).text()))
                             .songHomeUrl(liEle.getElementsByClass("mod_graph__img").get(0).attr("src"))
-                            .SongNo(i+1)
+                            .SongNo(i + 1)
                             .songDetailAccessUrl("https://kg.qq.com/node/play?s=" + dataId)
                             .build());
         }
