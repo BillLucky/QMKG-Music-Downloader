@@ -16,6 +16,7 @@
       - 软件默认是不让下载的，付费好像能下载，但是不知道能不能导出
 2. 解析html页面，获取网站的歌曲信息，输出到[JSON文件: 01.origin_songs.json](https://github.com/BillLucky/QMKG-Music-Downloader/blob/main/src/main/resources/json/01.origin_songs.json)
 3. 对JSON文件进行逐条解析，下载每首歌到本地
+    - 最终成果物说明如下图：![03. 最终成果物的输出说明.jpg](https://github.com/BillLucky/QMKG-Music-Downloader/blob/main/src/main/resources/images/03.%20%E6%9C%80%E7%BB%88%E6%88%90%E6%9E%9C%E7%89%A9%E7%9A%84%E8%BE%93%E5%87%BA%E8%AF%B4%E6%98%8E.jpg)
 
 ---
 
